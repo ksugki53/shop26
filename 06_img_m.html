@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖼️ 이미지 세로 배치 도구</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: #f8f9fa;
+            padding: 25px 20px;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .canvas-area {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #fff;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+
+        .file-section {
+            position: relative;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 3px dashed #4285f4;
+            border-radius: 20px;
+            background: #f8f9ff;
+        }
+
+        .file-upload {
+            position: relative;
+            padding: 40px 30px;
+            text-align: center;
+            margin-bottom: 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+        }
+
+        .file-upload::before {
+            display: none;
+        }
+
+        .file-upload:hover {
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+
+        .upload-text {
+            position: relative;
+            z-index: 1;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            position: relative;
+            z-index: 1;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        .file-list {
+            margin-bottom: 0;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid #667eea;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-number {
+            background: #667eea;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .file-size {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .setting-label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .setting-input {
+            padding: 10px 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .setting-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .process-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .process-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+            display: none;
+        }
+
+        .canvas-container {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            max-width: 100%;
+            max-height: 70vh;
+            overflow: auto;
+        }
+
+        #resultCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .download-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .download-notification {
+            background: #d1ecf1;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 4px solid #17a2b8;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .download-info {
+            font-size: 0.9rem;
+            margin-top: 8px;
+            color: #0c5460;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖼️ 이미지 세로 배치 도구</h1>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="section-title">
+                    📁 이미지 파일 선택
+                </div>
+                
+                <div class="file-section">
+                    <label class="file-upload">
+                        <input type="file" id="fileInput" multiple accept="image/*">
+                        <span class="upload-icon">📤</span>
+                        <div class="upload-text">이미지들을 선택하기</div>
+                        <div class="upload-subtext">PNG, JPG 파일을 선택하세요</div>
+                    </label>
+                    
+                    <div class="file-list" id="fileList"></div>
+                </div>
+                
+                <div class="section-title">
+                    ⚙️ 배치 설정
+                </div>
+                
+                <div class="settings-grid">
+                    <div class="setting-group">
+                        <label class="setting-label">캔버스 너비 (px)</label>
+                        <input type="number" class="setting-input" id="canvasWidth" value="860" min="100">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">이미지 간격 (px)</label>
+                        <input type="number" class="setting-input" id="imageSpacing" value="20" min="0">
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">크기 조절 방식</label>
+                        <select class="setting-input" id="resizeMode">
+                            <option value="fit">원본 크기 유지</option>
+                            <option value="width">너비에 맞춤</option>
+                            <option value="scale">비율 조절</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label class="setting-label">배경색</label>
+                        <select class="setting-input" id="backgroundColor">
+                            <option value="white">흰색</option>
+                            <option value="transparent">투명</option>
+                            <option value="black">검은색</option>
+                            <option value="gray">회색</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="process-btn" id="processBtn" disabled>
+                    🚀 4개 이미지 배치 시작
+                </button>
+
+                <button class="reset-btn" id="resetBtn">
+                    🔄 초기화
+                </button>
+                
+                <div class="success-message" id="successMessage">
+                    ✅ 모든 이미지가 성공적으로 배치되었습니다!
+                </div>
+            </div>
+            
+            <div class="canvas-area">
+                <div class="canvas-container">
+                    <canvas id="resultCanvas"></canvas>
+                </div>
+                <button class="download-btn" id="downloadBtn">💾 결과 이미지 저장</button>
+                <div class="download-notification" id="downloadNotification">
+                    <strong>✅ 다운로드 완료!</strong>
+                    <div class="download-info">
+                        파일이 브라우저 다운로드 폴더에 저장되었습니다.<br>
+                        • Windows: C:\Users\사용자명\Downloads<br>
+                        • Mac: /Users/사용자명/Downloads<br>
+                        • 브라우저 다운로드 목록(Ctrl+J 또는 Cmd+Shift+J)에서도 확인 가능합니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        let processedCanvas = null;
+
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const processBtn = document.getElementById('processBtn');
+        const canvas = document.getElementById('resultCanvas');
+        const ctx = canvas.getContext('2d');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const successMessage = document.getElementById('successMessage');
+        const downloadNotification = document.getElementById('downloadNotification');
+        const resetBtn = document.getElementById('resetBtn');
+
+        fileInput.addEventListener('change', handleFileSelect);
+        processBtn.addEventListener('click', processImages);
+        downloadBtn.addEventListener('click', downloadResult);
+        resetBtn.addEventListener('click', resetAll);
+
+        function handleFileSelect(e) {
+            selectedFiles = Array.from(e.target.files);
+            displayFileList();
+            updateProcessButton();
+            updateResetButton();
+        }
+
+        function displayFileList() {
+            fileList.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                
+                const sizeInKB = (file.size / 1024).toFixed(1);
+                
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-number">${index + 1}</div>
+                        <div>
+                            <div>${file.name}</div>
+                        </div>
+                    </div>
+                    <div class="file-size">${sizeInKB} KB</div>
+                `;
+                
+                fileList.appendChild(fileItem);
+            });
+        }
+
+        function updateProcessButton() {
+            processBtn.disabled = selectedFiles.length === 0;
+            processBtn.textContent = selectedFiles.length > 0 
+                ? `🚀 ${selectedFiles.length}개 이미지 배치 시작`
+                : '🚀 4개 이미지 배치 시작';
+        }
+
+        function updateResetButton() {
+            resetBtn.style.display = selectedFiles.length > 0 ? 'block' : 'none';
+        }
+
+        function resetAll() {
+            // 파일 선택 초기화
+            selectedFiles = [];
+            fileInput.value = '';
+            
+            // UI 초기화
+            fileList.innerHTML = '';
+            updateProcessButton();
+            updateResetButton();
+            
+            // 캔버스 초기화
+            canvas.width = 860;
+            canvas.height = 400;
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#6c757d';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('이미지를 선택하고 배치 버튼을 클릭하세요', canvas.width / 2, canvas.height / 2);
+            
+            // 다운로드 버튼 숨기기
+            downloadBtn.style.display = 'none';
+            downloadNotification.style.display = 'none';
+            successMessage.style.display = 'none';
+            
+            // 설정값 초기화
+            document.getElementById('canvasWidth').value = 860;
+            document.getElementById('imageSpacing').value = 20;
+            document.getElementById('resizeMode').value = 'fit';
+            document.getElementById('backgroundColor').value = 'white';
+            
+            processedCanvas = null;
+        }
+
+        async function processImages() {
+            if (selectedFiles.length === 0) return;
+
+            processBtn.disabled = true;
+            processBtn.textContent = '⏳ 처리 중...';
+            
+            try {
+                const canvasWidth = parseInt(document.getElementById('canvasWidth').value);
+                const imageSpacing = parseInt(document.getElementById('imageSpacing').value);
+                const resizeMode = document.getElementById('resizeMode').value;
+                const backgroundColor = document.getElementById('backgroundColor').value;
+
+                const images = await Promise.all(
+                    selectedFiles.map(file => loadImage(file))
+                );
+
+                let totalHeight = imageSpacing;
+                const processedImages = [];
+
+                // 이미지 크기 계산 및 처리
+                images.forEach(img => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (resizeMode === 'width' && width > canvasWidth - 2 * imageSpacing) {
+                        const ratio = (canvasWidth - 2 * imageSpacing) / width;
+                        width = canvasWidth - 2 * imageSpacing;
+                        height = height * ratio;
+                    } else if (resizeMode === 'scale') {
+                        const ratio = Math.min((canvasWidth - 2 * imageSpacing) / width, 1);
+                        width = width * ratio;
+                        height = height * ratio;
+                    }
+
+                    processedImages.push({
+                        img,
+                        width,
+                        height,
+                        x: (canvasWidth - width) / 2
+                    });
+
+                    totalHeight += height + imageSpacing;
+                });
+
+                // 캔버스 설정
+                canvas.width = canvasWidth;
+                canvas.height = totalHeight;
+
+                // 배경색 설정
+                if (backgroundColor !== 'transparent') {
+                    ctx.fillStyle = backgroundColor;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+
+                // 이미지 그리기
+                let currentY = imageSpacing;
+                processedImages.forEach(({ img, width, height, x }) => {
+                    ctx.drawImage(img, x, currentY, width, height);
+                    currentY += height + imageSpacing;
+                });
+
+                // 성공 메시지 표시
+                successMessage.style.display = 'block';
+                downloadBtn.style.display = 'inline-block';
+                processedCanvas = canvas;
+
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 3000);
+
+            } catch (error) {
+                console.error('이미지 처리 중 오류:', error);
+                alert('이미지 처리 중 오류가 발생했습니다.');
+            } finally {
+                processBtn.disabled = false;
+                processBtn.textContent = `🚀 ${selectedFiles.length}개 이미지 배치 시작`;
+            }
+        }
+
+        function loadImage(file) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = URL.createObjectURL(file);
+            });
+        }
+
+        function downloadResult() {
+            if (!processedCanvas) return;
+
+            const link = document.createElement('a');
+            const backgroundColor = document.getElementById('backgroundColor').value;
+            const format = backgroundColor === 'transparent' ? 'image/png' : 'image/jpeg';
+            const extension = backgroundColor === 'transparent' ? 'png' : 'jpg';
+            
+            const filename = `배치된_이미지_${new Date().getTime()}.${extension}`;
+            link.download = filename;
+            link.href = processedCanvas.toDataURL(format, 0.9);
+            link.click();
+
+            // 다운로드 완료 알림 표시
+            downloadNotification.style.display = 'block';
+            setTimeout(() => {
+                downloadNotification.style.display = 'none';
+            }, 8000);
+        }
+
+        // 초기 캔버스 설정
+        canvas.width = 860;
+        canvas.height = 400;
+        ctx.fillStyle = '#f8f9fa';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#6c757d';
+        ctx.font = '24px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('이미지를 선택하고 배치 버튼을 클릭하세요', canvas.width / 2, canvas.height / 2);
+    </script>
+</body>
+</html>
